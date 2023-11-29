@@ -1,0 +1,49 @@
+body {
+    color: #000;
+    font-weight: 400;
+    font-size: 13px;
+    font-family: Roboto,RobotoDraft,Helvetica,Arial,sans-serif;
+    padding: 10px;
+}
+
+.p5 {
+    padding: 0 5px;
+}
+
+.mh50{
+    max-height: 24px;
+}
+
+.tac{
+    text-align: center;
+}
+
+.fl{
+    float: left;
+}
+
+.fr{
+    float: right;
+}
+
+.selected{
+    font-weight: bold;
+}
+
+td {
+    padding: 0 5px;
+}
+
+.login-form{
+    position: relative;
+    top: 100%;
+    text-align: center;
+}
+
+.red{
+    color:red;
+}
+
+.panel{
+    margin: 10px 0;
+}
