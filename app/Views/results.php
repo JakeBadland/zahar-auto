@@ -7,16 +7,20 @@
         <div class="panel-body">
             <table>
                 <tr>
-                    <th class="col-xs-6">Desc</th>
-                    <th class="col-xs-3">OE</th>
-                    <th class="col-xs-3">Price</th>
+                    <th class="col-xs-5">Desc</th>
+                    <th class="col-xs-2">OE</th>
+                    <th class="col-xs-1">Price</th>
+                    <th class="col-xs-1">New price</th>
+                    <th class="col-xs-7">Url</th>
                 </tr>
 
                 <?php foreach ($items as $item) : ?>
                     <tr>
-                        <td class="col-xs-6"><?= $item->desc ?></td>
-                        <td class="col-xs-3"><?= $item->OE ?></td>
-                        <td class="col-xs-3"><?= $item->price ?></td>
+                        <td class="col-xs-5"><?= $item->desc ?></td>
+                        <td class="col-xs-2"><?= $item->OE ?></td>
+                        <td class="col-xs-1"><?= $item->price ?></td>
+                        <td class="col-xs-1"><?= $item->newPrice ?></td>
+                        <td class="col-xs-7"><?= $item->url ?></td>
                     </tr>
                 <?php endforeach; ?>
 

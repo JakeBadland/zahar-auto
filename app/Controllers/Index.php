@@ -19,7 +19,6 @@ class Index extends BaseController
         $data = [
             'count'     => 0,
             'updated'   => '',
-            'find'      => 0
         ];
 
         if (is_file($this->filePath)){

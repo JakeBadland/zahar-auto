@@ -29,14 +29,30 @@ class ProductModel extends Model
 
     }
 
-    public function getProductForUpdate()
+    public function getProductForUpdate($id = null)
     {
-        return $this->db->table($this->table)
+        $query = $this->db->table($this->table)
             ->select('*')
             ->orderBy('parsed_at', 'ASC')
-            ->where('error is NULL', NULL, FALSE)
-            //->orderBy('id', 'ASC')
-            ->get()->getRow();
+            //->where('error is NULL', NULL, FALSE)
+            ->limit(1);
+
+            if ($id){
+                $query->where(['id' => $id]);
+            }
+
+            return $query->get()->getRow();
+    }
+
+    public function updateProductParsedAt($product)
+    {
+        $data = [
+            'parsed_at' => date('Y-m-d H:i:s', time()),
+        ];
+
+        $this->db->table($this->table)
+            ->where(['OE' => $product->OE])
+            ->update($data);
     }
 
     public function updateProductInfo($product, $newPrice, $url)
@@ -90,7 +106,7 @@ class ProductModel extends Model
     {
         return $this->db->table('products')
             ->select('*')
-            ->where('find is NOT NULL', NULL, FALSE)
+            ->where('url is NOT NULL', NULL, FALSE)
             ->get()->getResult();
     }
 
@@ -105,7 +121,7 @@ class ProductModel extends Model
     {
         return $this->db->table('products')
             ->select('COUNT(*) as count')
-            ->where('find is NOT NULL', NULL, FALSE)
+            ->where('url is NOT NULL', NULL, FALSE)
             ->get()->getRow()->count;
     }
 }

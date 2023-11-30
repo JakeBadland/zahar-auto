@@ -23,7 +23,7 @@ class LibCurrencies
 
         $result = $db->table('settings')
             ->select('*')
-            ->where("(updated_at >= NOW() - INTERVAL 1 Minute) AND (key = 'currency')" )
+            ->where("(updated_at >= NOW() - INTERVAL 1 Hour) AND (key = 'currency')" )
             ->get()->getRow();
 
         if (!$result){

@@ -28,7 +28,7 @@ class libAutopro {
 
     public function run()
     {
-        $currency = LibCurrencies::updateCurrencies();
+        $currency = floatval(LibCurrencies::updateCurrencies());
         $model = new ProductModel();
 
         $this->checkHeaders();
@@ -39,32 +39,58 @@ class libAutopro {
 
         if ($html->code != 200){
             $model->productError($product, 'Part not found');
-            die;
+            $model->updateProductParsedAt($product);
+            die('Error: Part not found');
         }
-
-        $html = json_decode($html->body);
 
         libxml_use_internal_errors(true);
         $dom = new \DOMDocument();
-        $dom->loadHTML($html);
+        $dom->loadHTML($html->body);
 
         $finder = new \DomXPath($dom);
         $element = $finder->query("//*[contains(@class, 'pro-card__price__value')]");
-        $htmlString = $dom->saveHTML($element->item(0));
+        //$element = $dom->saveHTML($element->item(0));
+        if (isset($element->item(0)->nodeValue)){
+            $element = $element->item(0)->nodeValue;
+        } else {
+            echo "<PRE>";
+            var_dump($product);
+            echo "</PRE>";
+            $model->productError($product, 'Too many prices');
+            $model->updateProductParsedAt($product);
+            die('Too many prices');
+        }
+
+
+
         //$htmlString = $element->item(0)->nodeValue;
 
-        if (strpos($htmlString, 'грн') != false){
-            $price = floatval($htmlString);
-            $price = $price / $currency;
+        $price = null;
+        if (strpos($element, 'грн') !== false){
+            $element = str_replace(' ', '', $element);
+            $element = str_replace('грн', '', $element);
+            $price = floatval($element);
+            $price = round($price / $currency, 2);
+        } else {
+            $model->productError($product, 'Can`t find price');
+            $model->updateProductParsedAt($product);
+            die('Can`t find price');
         }
 
-        if ($price < $product->price){
-            $model->updateProductInfo($product, $price, $this->partUrl);
+        if (!$price){
+            $model->productError($product, 'Can`t get price');
+            $model->updateProductParsedAt($product);
+            die('Error: Can`t get price');
         }
+
+        $model->updateProductInfo($product, $price, $this->partUrl);
+        //$model->updateProductParsedAt($product);
     }
 
     private function getProductInfo($product)
     {
+        $model = new ProductModel();
+
         $body = [
             'Query' => $product->OE,
             'RegionId' =>	1,
@@ -81,20 +107,29 @@ class libAutopro {
 
         $result = json_decode($result->body);
 
-        $model = new ProductModel();
-
         if (!isset($result->Suggestions[0]->FoundPart->Part)){
             $model->productError($product, 'Part suggestion not found');
-            die();
+            die('Error: Part suggestion not found');
         }
 
+        /*
         if (count($result->Suggestions) > 1){
             $model->productError($product, 'Suggestions count > 1');
-            die();
+            die('Error: Suggestions count > 1');
         }
+        */
 
-        $part = $result->Suggestions[0]->FoundPart->Part;
-        $this->partUrl = $this->url . '/zapchasti-' . $part->ShortNr . '-' . $part->Brand->Name;
+        $params = $result->Suggestions[0]->Uri;
+        $params = explode('&', $params);
+        foreach ($params as $param){
+            if (strpos($param, 'uri=') !== false){
+                $params = $param;
+                break;
+            }
+        }
+        $params = str_replace('uri=', '', $params);
+        $params = str_replace('%2F', '', $params);
+        $this->partUrl = $this->url . '/' . $params;
 
         return $curl->execute($this->partUrl, $this->headers, null, 'GET', null);
     }
