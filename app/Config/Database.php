@@ -47,9 +47,9 @@ class Database extends Config
     public array $prod = [
         'DSN'      => '',
         'hostname' => 'localhost',
-        'username' => 'root',
-        'password' => '',
-        'database' => 'zahar_auto',
+        'username' => 'pandowoz_db',
+        'password' => 'c*YDa]p$&o*Q',
+        'database' => 'pandowoz_avto',
         'DBDriver' => 'MySQLi',
         'DBPrefix' => '',
         'pConnect' => false,
@@ -100,6 +100,10 @@ class Database extends Config
         }
 
         $result = strpos($_SERVER['HTTP_HOST'], '.loc');
+
+        if (!$result){
+            $result = strpos($_SERVER['HTTP_HOST'], '.pro');
+        }
 
         if ($result !== false){
             $this->defaultGroup = 'default';

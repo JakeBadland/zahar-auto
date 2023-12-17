@@ -36,6 +36,8 @@ $routes->get('/login', 'Index::login');
 $routes->post('/login', 'Index::login');
 $routes->get('/logout', 'Index::logout');
 
+$routes->get('/export', 'Index::export');
+
 $routes->get('/upload', 'Index::upload');
 $routes->post('/upload', 'Index::upload');
 

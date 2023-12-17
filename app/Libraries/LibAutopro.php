@@ -3,9 +3,8 @@
 namespace App\Libraries;
 
 use App\Models\ProductModel;
-use CodeIgniter\Model;
 
-class libAutopro {
+class LibAutopro {
     private $result = null;
     private $partUrl = null;
 
@@ -28,7 +27,7 @@ class libAutopro {
 
     public function run()
     {
-        $currency = floatval(LibCurrencies::updateCurrencies());
+
         $model = new ProductModel();
 
         $this->checkHeaders();
@@ -39,52 +38,97 @@ class libAutopro {
 
         if ($html->code != 200){
             $model->productError($product, 'Part not found');
-            $model->updateProductParsedAt($product);
-            die('Error: Part not found');
         }
 
+        $price = $this->getPrice($product, $html->body);
+
+        if (!$price){
+            $model->productError($product, 'Can`t get price');
+        }
+
+        $model->updateProductInfo($product, $price, $this->partUrl);
+    }
+
+    private function getPrice($product ,$htmlBody)
+    {
         libxml_use_internal_errors(true);
         $dom = new \DOMDocument();
-        $dom->loadHTML($html->body);
+        $dom->loadHTML($htmlBody);
 
         $finder = new \DomXPath($dom);
-        $element = $finder->query("//*[contains(@class, 'pro-card__price__value')]");
-        //$element = $dom->saveHTML($element->item(0));
-        if (isset($element->item(0)->nodeValue)){
-            $element = $element->item(0)->nodeValue;
+        $node = $finder->query("//*[contains(@class, 'pro-card__price__value')]");
+
+        if ($node->length){
+            $price = $this->parseSingle($product, $node);
         } else {
-            echo "<PRE>";
-            var_dump($product);
-            echo "</PRE>";
-            $model->productError($product, 'Too many prices');
-            $model->updateProductParsedAt($product);
-            die('Too many prices');
+            $price = $this->parseMulti($product, $finder);
         }
 
+        if (!$price){
+            return false;
+        }
 
+        return $price;
+    }
 
-        //$htmlString = $element->item(0)->nodeValue;
+    private function parseMulti($product, $finder)
+    {
+        $currency = floatval(LibCurrencies::updateCurrencies());
+
+        $rows = $finder->query('//table[@id="js-partslist-primary"]/tbody/tr');
+
+        $prices = [];
+        $price = null;
+
+        foreach ($rows as $tr){
+            $cols = $tr->getElementsByTagName('td');
+
+            $productOE = trim($cols[2]->nodeValue);
+            if ($productOE == $product->OE){
+                $price = trim($cols[5]->nodeValue);
+                $price = str_replace("\r\n", '', $price);
+                $price = str_replace(' ', '', $price);
+                $price = str_replace(',', '.', $price);
+                $price = trim(str_replace('грн', '', $price));
+                $price = floatval($price);
+                if ($price){
+                    $prices[] = $price;
+                }
+            }
+        }
+
+        if (!$price){
+            return false;
+        }
+
+        $price = min($prices);
+        return round($price / $currency, 2);
+    }
+
+    private function parseSingle($product, $node)
+    {
+        $model = new ProductModel();
+        $currency = floatval(LibCurrencies::updateCurrencies());
+
+        $node = $node->item(0)->nodeValue;
 
         $price = null;
-        if (strpos($element, 'грн') !== false){
-            $element = str_replace(' ', '', $element);
-            $element = str_replace('грн', '', $element);
-            $price = floatval($element);
+        if (strpos($node, 'грн') !== false){
+            $node = str_replace('грн', '', $node);
+            $node = trim($node);
+            $price = floatval($node);
             $price = round($price / $currency, 2);
         } else {
             $model->productError($product, 'Can`t find price');
-            $model->updateProductParsedAt($product);
-            die('Can`t find price');
+            die('Error: Can`t find price');
         }
 
         if (!$price){
             $model->productError($product, 'Can`t get price');
-            $model->updateProductParsedAt($product);
             die('Error: Can`t get price');
         }
 
-        $model->updateProductInfo($product, $price, $this->partUrl);
-        //$model->updateProductParsedAt($product);
+        return $price;
     }
 
     private function getProductInfo($product)

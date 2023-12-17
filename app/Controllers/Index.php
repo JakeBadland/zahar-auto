@@ -95,6 +95,30 @@ class Index extends BaseController
         die;
     }
 
+    public function export()
+    {
+        $model = new ProductModel();
+        $results = $model->getResults();
+        $filename = 'export_' . date('Y-m-d_H.i.s');
+
+        header('charset=utf-8');
+        header("Content-Disposition: attachment; filename=$filename.xls");
+        header("Pragma: no-cache");
+        header("Expires: 0");
+
+        foreach ($results as $item){
+            echo $item->desc . "\t";
+            echo $item->OE . "\t";
+            echo $item->price . "\t";
+            echo str_replace('.' ,',', $item->newPrice);
+
+            echo "\n";
+        }
+
+        die();
+
+    }
+
     public function test()
     {
 

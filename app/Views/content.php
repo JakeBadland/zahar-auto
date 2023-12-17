@@ -22,6 +22,7 @@
 
     <div><a href="/results">Показать результаты</a></div>
     <div><a href="/upload">Загрузить новый файл</a></div>
+    <div><a href="/export">Результат в файле</a></div>
     <div><a href="/clear">Удалить все товары</a></div>
 <!--    <div><a href="/uploads/datafile.csv">Сохранить загруженный файл</a></div>-->
 

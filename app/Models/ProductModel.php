@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Controllers\Cron;
 use CodeIgniter\Model;
 
 class ProductModel extends Model
@@ -78,6 +79,9 @@ class ProductModel extends Model
         $this->db->table($this->table)
             ->where(['OE' => $product->OE])
             ->update($data);
+
+        Cron::log($error);
+        //die($error);
     }
 
     public function updateProduct($product)
@@ -106,7 +110,8 @@ class ProductModel extends Model
     {
         return $this->db->table('products')
             ->select('*')
-            ->where('url is NOT NULL', NULL, FALSE)
+            ->where('price > newPrice', NULL, FALSE)
+            ->where('newPrice <> 0')
             ->get()->getResult();
     }
 
@@ -120,8 +125,16 @@ class ProductModel extends Model
     public function getFindCount()
     {
         return $this->db->table('products')
+            ->select('COUNT(*) as total')
+            ->where('price > newPrice', NULL, FALSE)
+            ->where('newPrice <> 0')
+            ->get()->getRow()->total;
+
+        /*
+        return $this->db->table('products')
             ->select('COUNT(*) as count')
             ->where('url is NOT NULL', NULL, FALSE)
             ->get()->getRow()->count;
+        */
     }
 }
