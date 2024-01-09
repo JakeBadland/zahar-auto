@@ -28,6 +28,7 @@ class Index extends BaseController
 
         $data['find'] = $productModel->getFindCount();
         $data['count'] = $productModel->getCount();
+        $data['last_parsed'] = $productModel->getLastParsed();
 
         return view('content', ['data' => $data]);
     }
@@ -111,12 +112,12 @@ class Index extends BaseController
             echo $item->OE . "\t";
             echo $item->price . "\t";
             echo str_replace('.' ,',', $item->newPrice);
+            echo $item->average . "\t";
 
             echo "\n";
         }
 
         die();
-
     }
 
     public function test()

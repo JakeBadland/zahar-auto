@@ -11,6 +11,7 @@
                     <th class="col-xs-2">OE</th>
                     <th class="col-xs-1">Price</th>
                     <th class="col-xs-2">New price</th>
+                    <th class="col-xs-2">Average</th>
                     <th class="col-xs-2">Url</th>
                 </tr>
                 <?php foreach ($items as $item) : ?>
@@ -19,6 +20,7 @@
                         <td class="col-xs-2"><?= $item->OE ?></td>
                         <td class="col-xs-1"><?= $item->price ?></td>
                         <td class="col-xs-2"><?= $item->newPrice ?></td>
+                        <td class="col-xs-2"><?= $item->average ?></td>
                         <td class="col-xs-2"><a href="<?= $item->url ?>" target="_blank">Link</a></td>
                     </tr>
                 <?php endforeach; ?>

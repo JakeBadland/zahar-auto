@@ -41,12 +41,13 @@ class LibAutopro {
         }
 
         $price = $this->getPrice($product, $html->body);
+        $averagePrice = $this->getAveragePrice($product, $html->body);
 
         if (!$price){
             $model->productError($product, 'Can`t get price');
         }
 
-        $model->updateProductInfo($product, $price, $this->partUrl);
+        $model->updateProductInfo($product, $price, $averagePrice, $this->partUrl);
     }
 
     private function getPrice($product ,$htmlBody)
@@ -68,7 +69,59 @@ class LibAutopro {
             return false;
         }
 
+        //if price less then a 10% price - (new price - 10%)
+        $percents = ($product->price / $price) * 100;
+
+        if ($percents < 90){
+            return 0;
+        }
+
         return $price;
+    }
+
+    private function getAveragePrice($product, $htmlBody)
+    {
+        $currency = floatval(LibCurrencies::updateCurrencies());
+
+        libxml_use_internal_errors(true);
+        $dom = new \DOMDocument();
+        $dom->loadHTML($htmlBody);
+
+        $finder = new \DomXPath($dom);
+        $node = $finder->query("//*[contains(@class, 'pro-card__price__value')]");
+
+        if ($node->length){
+            return $this->parseSingle($product, $node);
+        }
+
+        $rows = $finder->query('//table[@id="js-partslist-primary"]/tbody/tr');
+
+        $prices = [];
+        $sum = 0;
+
+        foreach ($rows as $tr){
+            $cols = $tr->getElementsByTagName('td');
+
+            $productOE = trim($cols[2]->nodeValue);
+            if ($productOE == $product->OE){
+                $price = $this->clearPrice($cols[5]->nodeValue);
+                if ($price){
+                    $prices[] = $price;
+                    $sum += $price;
+                }
+            }
+        }
+
+        if (count($prices)){
+            $average = $sum / count($prices);
+            $average = $average / $currency;
+            $average = round($average, 2);
+        } else {
+            return 0;
+        }
+
+
+        return $average;
     }
 
     private function parseMulti($product, $finder)
@@ -85,12 +138,7 @@ class LibAutopro {
 
             $productOE = trim($cols[2]->nodeValue);
             if ($productOE == $product->OE){
-                $price = trim($cols[5]->nodeValue);
-                $price = str_replace("\r\n", '', $price);
-                $price = str_replace(' ', '', $price);
-                $price = str_replace(',', '.', $price);
-                $price = trim(str_replace('грн', '', $price));
-                $price = floatval($price);
+                $price = $this->clearPrice($cols[5]->nodeValue);
                 if ($price){
                     $prices[] = $price;
                 }
@@ -103,6 +151,18 @@ class LibAutopro {
 
         $price = min($prices);
         return round($price / $currency, 2);
+    }
+
+    private function clearPrice($price)
+    {
+        $price = trim($price);
+        $price = str_replace("\r\n", '', $price);
+        $price = str_replace(' ', '', $price);
+        $price = str_replace(',', '.', $price);
+        $price = trim(str_replace('грн', '', $price));
+        $price = floatval($price);
+
+        return $price;
     }
 
     private function parseSingle($product, $node)
@@ -155,13 +215,6 @@ class LibAutopro {
             $model->productError($product, 'Part suggestion not found');
             die('Error: Part suggestion not found');
         }
-
-        /*
-        if (count($result->Suggestions) > 1){
-            $model->productError($product, 'Suggestions count > 1');
-            die('Error: Suggestions count > 1');
-        }
-        */
 
         $params = $result->Suggestions[0]->Uri;
         $params = explode('&', $params);

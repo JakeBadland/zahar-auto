@@ -56,12 +56,14 @@ class ProductModel extends Model
             ->update($data);
     }
 
-    public function updateProductInfo($product, $newPrice, $url)
+    public function updateProductInfo($product, $newPrice, $averagePrice, $url)
     {
         $data = [
             'newPrice' => $newPrice,
+            'average' => $averagePrice,
             'url'  => $url,
             'parsed_at' => date('Y-m-d H:i:s', time()),
+            'error' => ''
         ];
 
         $this->db->table($this->table)
@@ -120,6 +122,15 @@ class ProductModel extends Model
         return $this->db->table($this->table)
             ->select('COUNT(*) as count')
             ->get()->getRow()->count;
+    }
+
+    public function getLastParsed()
+    {
+        return $this->db->table($this->table)
+            ->select('*')
+            ->orderBy('parsed_at', 'DESC')
+            ->limit(1)
+            ->get()->getRow();
     }
 
     public function getFindCount()

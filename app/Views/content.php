@@ -10,12 +10,19 @@
                 <div class="col-xs-6"><?=$data['count']?></div>
             </div>
             <div class="row">
-                <div class="col-xs-6">Последнее обновление:</div>
+                <div class="col-xs-6">Последнее обновление базы:</div>
                 <div class="col-xs-6"><?=$data['updated']?></div>
             </div>
             <div class="row">
                 <div class="col-xs-6">Найдено дешевле:</div>
                 <div class="col-xs-6"><?=$data['find']?></div>
+            </div>
+            <div class="row">
+                <div class="col-xs-6">Последний скан:</div>
+                <div class="col-xs-6">
+                    <?=$data['last_parsed']->desc?>
+                    (<?=$data['last_parsed']->parsed_at?>)
+                </div>
             </div>
         </div>
     </div>
