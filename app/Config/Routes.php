@@ -41,6 +41,9 @@ $routes->get('/export', 'Index::export');
 $routes->get('/upload', 'Index::upload');
 $routes->post('/upload', 'Index::upload');
 
+$routes->get('/doubles', 'Index::doubles');
+$routes->post('/doubles', 'Index::doubles');
+
 $routes->get('/clear', 'Index::clear');
 $routes->get('/results', 'Index::result');
 

@@ -23,12 +23,13 @@ class Index extends BaseController
 
         if (is_file($this->filePath)){
             $result = filectime($this->filePath);
-            $data['updated'] = date('d-m-Y H:i:s', $result);
+            $data['updated_data'] = date('d-m-Y H:i:s', $result);
         }
 
         $data['find'] = $productModel->getFindCount();
         $data['count'] = $productModel->getCount();
         $data['last_parsed'] = $productModel->getLastParsed();
+        $data['updated_products'] = $productModel->getLastUpdated();
 
         return view('content', ['data' => $data]);
     }
@@ -54,6 +55,49 @@ class Index extends BaseController
         return view('upload');
     }
 
+    public function doubles()
+    {
+        $file = $this->request->getFile('testfile');
+
+        if ($file && !$file->hasMoved()){
+            $db = db_connect();
+
+            if (is_file($this->filePath)){
+                unlink($this->filePath);
+            }
+
+            $filepath = WRITEPATH . 'uploads' . $file->store('', 'testfile.csv');
+
+            $items = libCsv::parseFile($filepath);
+
+            unset($items[0]); //header
+
+            $fileOe = [];
+            foreach ($items as $item){
+                $fileOe[] = $item[2];
+            }
+
+            $dubs = [];
+            foreach(array_count_values($fileOe) as $val => $c){
+                if($c > 1){
+                    $dubs[] = $val;
+                }
+            }
+
+            if ($dubs){
+                $products = $db->table('products')
+                    ->select('*')
+                    ->whereIn('OE', $dubs)
+                    ->get()->getResult();
+            }
+
+            return view('doubles', ['items' => $products]);
+        }
+
+        return view('upload_d');
+    }
+
+    /*
     public function clear()
     {
         $productModel = new ProductModel();
@@ -61,6 +105,7 @@ class Index extends BaseController
 
         return redirect()->to('/');
     }
+    */
 
     public function result()
     {

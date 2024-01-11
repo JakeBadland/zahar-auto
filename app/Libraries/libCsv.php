@@ -13,7 +13,7 @@ class libCsv {
         $result = [];
         $row = 1;
         if (($handle = fopen($path, 'r')) !== FALSE) {
-            while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+            while (($data = fgetcsv($handle, 1024, ",")) !== FALSE) {
                 $result[] = $data;
             }
             fclose($handle);

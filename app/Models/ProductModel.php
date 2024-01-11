@@ -18,6 +18,7 @@ class ProductModel extends Model
     {
         unset($data[0]); //remove header
 
+        $fileOe = [];
         foreach ($data as $item){
             $product = [
                 'desc'  => $item[1],
@@ -25,9 +26,47 @@ class ProductModel extends Model
                 'price' => $item[8]
             ];
 
+            $fileOe[] = $item[2];
             $this->updateProduct($product);
         }
 
+        $this->deleteDiffs($fileOe);
+    }
+
+    private function deleteDiffs($fileOe)
+    {
+        $result = $this->db->table($this->table)
+            ->select('OE')->get()->getResultArray();
+
+        $dbOe = [];
+        foreach ($result as $item){
+            $dbOe[] = $item['OE'];
+        }
+
+        $diff = array_diff($dbOe, $fileOe);
+
+        $this->db->table($this->table)
+            ->whereIn('OE', $diff)
+            ->delete();
+    }
+
+    public function updateProduct($product)
+    {
+        $item = $this->db->table($this->table)
+            ->select('*')
+            ->getWhere(['OE' => $product['OE']])
+            ->getRow();
+
+        if (!$item){
+            $this->db->table($this->table)->insert($product);
+            return;
+        }
+
+        //$product['updated_at'] = date('Y-m-d H:i:s', time());
+
+        $this->db->table($this->table)
+            ->where(['OE' => $product['OE']])
+            ->update($product);
     }
 
     public function getProductForUpdate($id = null)
@@ -43,6 +82,14 @@ class ProductModel extends Model
             }
 
             return $query->get()->getRow();
+    }
+
+    public function getLastUpdated()
+    {
+        return $this->db->table($this->table)
+            ->select('COUNT(*) AS count')
+            ->where('updated_at > NOW() - INTERVAL 1 DAY')
+            ->get()->getRow()->count;
     }
 
     public function updateProductParsedAt($product)
@@ -63,6 +110,7 @@ class ProductModel extends Model
             'average' => $averagePrice,
             'url'  => $url,
             'parsed_at' => date('Y-m-d H:i:s', time()),
+            'updated_at' => date('Y-m-d H:i:s', time()),
             'error' => ''
         ];
 
@@ -84,23 +132,6 @@ class ProductModel extends Model
 
         Cron::log($error);
         //die($error);
-    }
-
-    public function updateProduct($product)
-    {
-        $item = $this->db->table($this->table)
-            ->select('*')
-            ->getWhere(['OE' => $product['OE']])
-            ->getRow();
-
-        if (!$item){
-            $this->db->table($this->table)->insert($product);
-            return;
-        }
-
-        $this->db->table($this->table)
-            ->where(['OE' => $product['OE']])
-            ->update($product);
     }
 
     public function clearAll()
@@ -148,4 +179,5 @@ class ProductModel extends Model
             ->get()->getRow()->count;
         */
     }
+
 }

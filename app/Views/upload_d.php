@@ -5,10 +5,10 @@
 <div class="container">
     <div class="card card-body panel panel-default">
         <div class="panel-body">
-            <h3>Загрузить новые продукты</h3>
+            <h3>Анализ на дубликаты</h3>
             <br/>
-            <form enctype="multipart/form-data" method="post" action="/upload">
-                <input type="file" name="datafile" accept="text/csv">
+            <form enctype="multipart/form-data" method="post" action="/doubles">
+                <input type="file" name="testfile" accept="text/csv">
                 <br/>
                 <input type="submit" value="Загрузить">
             </form>
