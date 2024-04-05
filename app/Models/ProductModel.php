@@ -11,27 +11,37 @@ class ProductModel extends Model
     public string $desc = '';
     public string $oe = '';
     public int $price;
-    public array $indexes = [
-
-    ];
 
     protected string $table = 'products';
 
-    private function getIndexes()
+    private function getIndexes($cols)
     {
+        $result = [];
 
+        $imports = $this->db->table('settings')
+            ->select('*')
+            ->like('key', 'import_')
+            ->get()->getResult();
+
+        foreach ($imports as $key => $setting){
+            $index = array_search($setting->value, $cols);
+            $result[$setting->key] = $index;
+        }
+
+        return $result;
     }
 
     public function updateProducts($data)
     {
+        $indexes = $this->getIndexes($data[0]);
         unset($data[0]); //remove header
 
         $fileOe = [];
         foreach ($data as $item){
             $product = [
-                'desc'  => $item[1],
-                'OE'    => $item[2],
-                'price' => $item[8]
+                'desc'  => $item[$indexes['import_desc']],
+                'OE'    => $item[$indexes['import_oe']],
+                'price' => $item[$indexes['import_price']]
             ];
 
             $fileOe[] = $item[2];

@@ -28,8 +28,10 @@
             <div class="row">
                 <div class="col-xs-6">Последний скан:</div>
                 <div class="col-xs-6">
+                    <?php if ($data['last_parsed']) : ?>
                     <?=$data['last_parsed']->desc?>
                     (<?=$data['last_parsed']->parsed_at?>)
+                    <?php endif ?>
                 </div>
             </div>
         </div>
