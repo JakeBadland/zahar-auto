@@ -34,6 +34,36 @@ class Index extends BaseController
         return view('content', ['data' => $data]);
     }
 
+    public function settings()
+    {
+        $db = db_connect();
+
+        $data = $this->request->getPost();
+
+        if ($data){
+            foreach ($data as $key => $value){
+
+                $db->table('settings')
+                    ->where(['key' => $key])
+                    ->update(['value' => trim($value)]);
+            }
+
+            return redirect()->to('/settings');
+        }
+
+        $settings = $db->table('settings')
+            ->select('*')
+            ->like('key', 'import_')
+            ->get()->getResult();
+
+        $items = [];
+        foreach ($settings as $line){
+            $items[$line->key] = $line->value;
+        }
+
+        return view('settings', ['items' => $items]);
+    }
+
     public function upload()
     {
         $file = $this->request->getFile('datafile');
@@ -156,8 +186,8 @@ class Index extends BaseController
             echo $item->desc . "\t";
             echo $item->OE . "\t";
             echo $item->price . "\t";
-            echo str_replace('.' ,',', $item->newPrice);
-            echo $item->average . "\t";
+            echo str_replace('.' ,',', $item->newPrice) . "\t";
+            echo str_replace('.' ,',', $item->average) . "\t";
 
             echo "\n";
         }

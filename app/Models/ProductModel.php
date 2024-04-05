@@ -11,8 +11,16 @@ class ProductModel extends Model
     public string $desc = '';
     public string $oe = '';
     public int $price;
+    public array $indexes = [
+
+    ];
 
     protected string $table = 'products';
+
+    private function getIndexes()
+    {
+
+    }
 
     public function updateProducts($data)
     {
@@ -45,9 +53,11 @@ class ProductModel extends Model
 
         $diff = array_diff($dbOe, $fileOe);
 
-        $this->db->table($this->table)
-            ->whereIn('OE', $diff)
-            ->delete();
+        if ($diff){
+            $this->db->table($this->table)
+                ->whereIn('OE', $diff)
+                ->delete();
+        }
     }
 
     public function updateProduct($product)
@@ -114,6 +124,12 @@ class ProductModel extends Model
             'error' => ''
         ];
 
+        /*
+        if ($product->price = '0'){
+            $data['price'] = $newPrice;
+        }
+        */
+
         $this->db->table($this->table)
             ->where(['OE' => $product->OE])
             ->update($data);
@@ -130,8 +146,8 @@ class ProductModel extends Model
             ->where(['OE' => $product->OE])
             ->update($data);
 
-        Cron::log($error);
-        //die($error);
+        //Cron::log($error);
+        die($error);
     }
 
     public function clearAll()

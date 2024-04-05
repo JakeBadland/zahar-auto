@@ -34,6 +34,10 @@ class LibAutopro {
         //$this->checkCookies();
 
         $product = $model->getProductForUpdate();
+
+        //for testing
+        //$product = $model->getProductForUpdate(1380);
+
         $html = $this->getProductInfo($product);
 
         if ($html->code != 200){
@@ -43,7 +47,7 @@ class LibAutopro {
         $price = $this->getPrice($product, $html->body);
         $averagePrice = $this->getAveragePrice($product, $html->body);
 
-        if (!$price){
+        if (!$price && $price !== 0){
             $model->productError($product, 'Can`t get price');
         }
 
@@ -71,7 +75,6 @@ class LibAutopro {
 
         //if price less then a 10% price - (new price - 10%)
         $percents = ($product->price / $price) * 100;
-
         if ($percents < 90){
             return 0;
         }
@@ -104,7 +107,9 @@ class LibAutopro {
 
             $productOE = trim($cols[2]->nodeValue);
             if ($productOE == $product->OE){
+
                 $price = $this->clearPrice($cols[5]->nodeValue);
+
                 if ($price){
                     $prices[] = $price;
                     $sum += $price;
@@ -119,7 +124,6 @@ class LibAutopro {
         } else {
             return 0;
         }
-
 
         return $average;
     }
@@ -139,17 +143,19 @@ class LibAutopro {
             $productOE = trim($cols[2]->nodeValue);
             if ($productOE == $product->OE){
                 $price = $this->clearPrice($cols[5]->nodeValue);
+
                 if ($price){
                     $prices[] = $price;
                 }
             }
         }
 
-        if (!$price){
+        if (!$prices){
             return false;
         }
 
         $price = min($prices);
+
         return round($price / $currency, 2);
     }
 
