@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Helpers\PagerHelper;
 use App\Libraries\libCsv;
 use App\Models\ProductModel;
 use App\Models\UserModel;
@@ -137,12 +138,79 @@ class Index extends BaseController
     }
     */
 
-    public function result()
+    public function result() : string
     {
         $productModel = new ProductModel();
         $result = $productModel->getResults();
 
         return view('results', ['items' => $result]);
+    }
+
+    public function listProducts($page = null) : string
+    {
+        $perPage = 100;
+
+        $productModel = new ProductModel();
+        $pager = new PagerHelper();
+
+        $total = $productModel->getCount();
+
+        $products = $productModel->get($page, $perPage);
+
+        $pager = $pager->calc($total, $page, $perPage);
+
+        $paginator = view('paginator', ['pager' => $pager]);
+
+        return view('products', [
+            'products' => $products,
+            'paginator' => $paginator
+        ]);
+    }
+
+    public function searchProducts()
+    {
+        $productModel = new ProductModel();
+
+        $data = $this->request->getPost();
+
+        if (isset($data['text'])){
+            $product = $productModel->search($data['text']);
+
+            if ($product){
+                return view('edit_product', ['product' => $product]);
+            }
+
+            die('Products not found');
+        }
+
+    }
+
+    public function editProduct($productId = null)
+    {
+        $db = db_connect();
+
+        $productModel = new ProductModel();
+
+        $data = $this->request->getPost();
+
+        if ($data){
+            $productId = $data['id'];
+            unset($data['id']);
+            $data['is_ignored'] = (isset($data['is_ignored']))? 1 : 0;
+
+            $db->table('products')
+                ->where(['id' => $productId])
+                ->update($data);
+
+            return redirect()->to('/edit-product/' . $productId);
+        }
+
+        if ($productId){
+            $product = $productModel->getById($productId);
+
+            return view('edit_product', ['product' => $product]);
+        }
+
     }
 
     public function login()

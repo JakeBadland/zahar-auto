@@ -42,7 +42,7 @@
     <div><a href="/upload">Загрузить новый файл</a></div>
     <div><a href="/export">Результат в файле</a></div>
     <div><a href="/doubles">Анализ на дубликаты</a></div>
-<!--    <div><a href="/edit">Редактировать товары</a></div>-->
+    <div><a href="/list/1">Редактировать товары</a></div>
 <!--    <div><a href="/clear">Удалить все товары</a></div>-->
 <!--    <div><a href="/uploads/datafile.csv">Сохранить загруженный файл</a></div>-->
 

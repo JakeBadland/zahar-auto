@@ -190,20 +190,41 @@ class ProductModel extends Model
             ->get()->getRow();
     }
 
+    public function getById($productId)
+    {
+        return $this->db->table($this->table)
+            ->select('*')
+            ->where("id", $productId)
+            ->get()->getRow();
+    }
+
+    public function get($page, $perPage = 100)
+    {
+        $page--;
+        $offset = $page * $perPage;
+
+        return $this->db->table($this->table)
+            ->select('*')
+            ->limit($perPage, $offset)
+            ->get()->getResult();
+    }
+
     public function getFindCount()
     {
-        return $this->db->table('products')
+        return $this->db->table($this->table)
             ->select('COUNT(*) as total')
             ->where('price > newPrice', NULL, FALSE)
             ->where('newPrice <> 0')
             ->get()->getRow()->total;
 
-        /*
-        return $this->db->table('products')
-            ->select('COUNT(*) as count')
-            ->where('url is NOT NULL', NULL, FALSE)
-            ->get()->getRow()->count;
-        */
+    }
+
+    public function search($text)
+    {
+        return $this->db->table($this->table)
+            ->select('*')
+            ->where('OE', $text)
+            ->get()->getRow();
     }
 
 }
