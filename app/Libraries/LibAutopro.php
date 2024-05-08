@@ -27,16 +27,23 @@ class LibAutopro {
 
     public function run()
     {
+        $currency = floatval(LibCurrencies::updateCurrencies());
 
         $model = new ProductModel();
 
         $this->checkHeaders();
         //$this->checkCookies();
 
-        $product = $model->getProductForUpdate();
+        $product = $model->getProductForUpdate(13036);
+
+        echo "<PRE>";
+        var_dump($product);
+        echo "</PRE>";
 
         //for testing
-        //$product = $model->getProductForUpdate(1380);
+        //$product = $model->getProductForUpdate(14565); //multi
+        //$product = $model->getProductForUpdate(13036); //single
+        //$product = $model->getProductForUpdate(13569); //can`t get price
 
         $html = $this->getProductInfo($product);
 
@@ -44,8 +51,9 @@ class LibAutopro {
             $model->productError($product, 'Part not found');
         }
 
-        $price = $this->getPrice($product, $html->body);
-        $averagePrice = $this->getAveragePrice($product, $html->body);
+        $price = $this->getPrice($product, $html->body, $currency);
+
+        $averagePrice = $this->getAveragePrice($product, $html->body, $currency);
 
         if (!$price && $price !== 0){
             $model->productError($product, 'Can`t get price');
@@ -54,7 +62,7 @@ class LibAutopro {
         $model->updateProductInfo($product, $price, $averagePrice, $this->partUrl);
     }
 
-    private function getPrice($product ,$htmlBody)
+    private function getPrice($product ,$htmlBody, $currency)
     {
         libxml_use_internal_errors(true);
         $dom = new \DOMDocument();
@@ -64,9 +72,9 @@ class LibAutopro {
         $node = $finder->query("//*[contains(@class, 'pro-card__price__value')]");
 
         if ($node->length){
-            $price = $this->parseSingle($product, $node);
+            $price = $this->parseSingle($product, $node, $currency);
         } else {
-            $price = $this->parseMulti($product, $finder);
+            $price = $this->parseMulti($product, $finder, $currency);
         }
 
         if (!$price){
@@ -82,10 +90,67 @@ class LibAutopro {
         return $price;
     }
 
-    private function getAveragePrice($product, $htmlBody)
+    private function parseMulti($product, $finder, $currency)
     {
-        $currency = floatval(LibCurrencies::updateCurrencies());
+        $rows = $finder->query('//table[@id="js-partslist-primary"]/tbody/tr');
 
+        $prices = [];
+        $price = null;
+
+        foreach ($rows as $tr){
+            $cols = $tr->getElementsByTagName('td');
+
+            $productOE = trim($cols[2]->nodeValue);
+            if ($productOE == $product->OE){
+                $price = $this->clearPrice($cols[5]->nodeValue);
+
+                if ($price){
+                    $prices[] = $price;
+                }
+            }
+        }
+
+        if (!$prices){
+            return false;
+        }
+
+        $price = min($prices);
+
+        return round($price / $currency, 2);
+    }
+
+    private function parseSingle($product, $node, $currency)
+    {
+        $model = new ProductModel();
+
+        $node = $node->item(0)->nodeValue;
+
+        $price = null;
+        if (strpos($node, 'грн') !== false){
+            $node = str_replace('грн', '', $node);
+            $node = trim($node);
+            $price = floatval($node);
+            $price = round($price / $currency, 2);
+        } else {
+            $model->productError($product, 'Can`t find price');
+            die('Error: Can`t find price');
+        }
+
+        if (!$price){
+            $model->productError($product, 'Can`t get price');
+            die('Error: Can`t get price');
+        }
+
+        return $price;
+    }
+
+    private function isUsed($td)
+    {
+
+    }
+
+    private function getAveragePrice($product, $htmlBody, $currency)
+    {
         libxml_use_internal_errors(true);
         $dom = new \DOMDocument();
         $dom->loadHTML($htmlBody);
@@ -94,7 +159,7 @@ class LibAutopro {
         $node = $finder->query("//*[contains(@class, 'pro-card__price__value')]");
 
         if ($node->length){
-            return $this->parseSingle($product, $node);
+            return $this->parseSingle($product, $node, $currency);
         }
 
         $rows = $finder->query('//table[@id="js-partslist-primary"]/tbody/tr');
@@ -128,37 +193,6 @@ class LibAutopro {
         return $average;
     }
 
-    private function parseMulti($product, $finder)
-    {
-        $currency = floatval(LibCurrencies::updateCurrencies());
-
-        $rows = $finder->query('//table[@id="js-partslist-primary"]/tbody/tr');
-
-        $prices = [];
-        $price = null;
-
-        foreach ($rows as $tr){
-            $cols = $tr->getElementsByTagName('td');
-
-            $productOE = trim($cols[2]->nodeValue);
-            if ($productOE == $product->OE){
-                $price = $this->clearPrice($cols[5]->nodeValue);
-
-                if ($price){
-                    $prices[] = $price;
-                }
-            }
-        }
-
-        if (!$prices){
-            return false;
-        }
-
-        $price = min($prices);
-
-        return round($price / $currency, 2);
-    }
-
     private function clearPrice($price)
     {
         $price = trim($price);
@@ -167,32 +201,6 @@ class LibAutopro {
         $price = str_replace(',', '.', $price);
         $price = trim(str_replace('грн', '', $price));
         $price = floatval($price);
-
-        return $price;
-    }
-
-    private function parseSingle($product, $node)
-    {
-        $model = new ProductModel();
-        $currency = floatval(LibCurrencies::updateCurrencies());
-
-        $node = $node->item(0)->nodeValue;
-
-        $price = null;
-        if (strpos($node, 'грн') !== false){
-            $node = str_replace('грн', '', $node);
-            $node = trim($node);
-            $price = floatval($node);
-            $price = round($price / $currency, 2);
-        } else {
-            $model->productError($product, 'Can`t find price');
-            die('Error: Can`t find price');
-        }
-
-        if (!$price){
-            $model->productError($product, 'Can`t get price');
-            die('Error: Can`t get price');
-        }
 
         return $price;
     }
