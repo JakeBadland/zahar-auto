@@ -34,14 +34,10 @@ class LibAutopro {
         $this->checkHeaders();
         //$this->checkCookies();
 
-        $product = $model->getProductForUpdate(13036);
-
-        echo "<PRE>";
-        var_dump($product);
-        echo "</PRE>";
+        $product = $model->getProductForUpdate();
 
         //for testing
-        //$product = $model->getProductForUpdate(14565); //multi
+        //$product = $model->getProductForUpdate(17258); //multi
         //$product = $model->getProductForUpdate(13036); //single
         //$product = $model->getProductForUpdate(13569); //can`t get price
 
@@ -133,12 +129,10 @@ class LibAutopro {
             $price = round($price / $currency, 2);
         } else {
             $model->productError($product, 'Can`t find price');
-            die('Error: Can`t find price');
         }
 
         if (!$price){
             $model->productError($product, 'Can`t get price');
-            die('Error: Can`t get price');
         }
 
         return $price;
@@ -227,7 +221,6 @@ class LibAutopro {
 
         if (!isset($result->Suggestions[0]->FoundPart->Part)){
             $model->productError($product, 'Part suggestion not found');
-            die('Error: Part suggestion not found');
         }
 
         $params = $result->Suggestions[0]->Uri;

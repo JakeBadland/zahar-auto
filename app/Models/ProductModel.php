@@ -91,11 +91,16 @@ class ProductModel extends Model
 
     public function getProductForUpdate($id = null)
     {
+        $where = "is_ignored = 0 OR is_ignored IS NULL";
+
         $query = $this->db->table($this->table)
             ->select('*')
             ->orderBy('parsed_at', 'ASC')
-            //->where('error is NULL', NULL, FALSE)
             ->limit(1);
+
+            if (!$id){
+                $query->where($where);
+            }
 
             if ($id){
                 $query->where(['id' => $id]);
@@ -149,7 +154,8 @@ class ProductModel extends Model
     {
         $data = [
             'parsed_at' => date('Y-m-d H:i:s', time()),
-            'error' => $error
+            'error' => $error,
+            'is_ignored' => 1
         ];
 
         $this->db->table($this->table)
@@ -172,6 +178,24 @@ class ProductModel extends Model
             ->where('price > newPrice', NULL, FALSE)
             ->where('newPrice <> 0')
             ->get()->getResult();
+    }
+
+    public function getErrorProducts()
+    {
+        return $this->db->table($this->table)
+            ->select('*')
+            ->where( 'error IS NOT NULL')
+            ->get()->getResult();
+
+    }
+
+    public function getErrorsCount()
+    {
+        return $this->db->table($this->table)
+            ->select('COUNT(*) as count')
+            ->where( 'error IS NOT NULL')
+            ->get()->getRow()->count;
+
     }
 
     public function getCount()

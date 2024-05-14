@@ -48,8 +48,10 @@ $routes->get('/doubles', 'Index::doubles');
 $routes->post('/doubles', 'Index::doubles');
 
 //$routes->get('/list', 'Index::listProducts/1');
+$routes->get('/error-products', 'Index::errorProducts');
 $routes->get('/list/(:num)', 'Index::listProducts/$1');
 $routes->post('/search-products', 'Index::searchProducts');
+
 
 $routes->get('/edit-product/(:num)', 'Index::editProduct/$1');
 $routes->post('/edit-product', 'Index::editProduct');

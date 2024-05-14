@@ -29,10 +29,20 @@ class Index extends BaseController
 
         $data['find'] = $productModel->getFindCount();
         $data['count'] = $productModel->getCount();
+        $data['errors_count'] = $productModel->getErrorsCount();
         $data['last_parsed'] = $productModel->getLastParsed();
         $data['updated_products'] = $productModel->getLastUpdated();
 
         return view('content', ['data' => $data]);
+    }
+
+    public function errorProducts(): string
+    {
+        $productModel = new ProductModel();
+
+        $products = $productModel->getErrorProducts();
+
+        return view('error_products', ['products' => $products]);
     }
 
     public function settings()

@@ -18,6 +18,10 @@
                 <div class="col-xs-6"><?=$data['count']?></div>
             </div>
             <div class="row">
+                <div class="col-xs-6">Товаров с ошибками:</div>
+                <div class="col-xs-6"><?=$data['errors_count']?></div>
+            </div>
+            <div class="row">
                 <div class="col-xs-6">Обновлено товаров за сутки:</div>
                 <div class="col-xs-6"><?=$data['updated_products']?></div>
             </div>
@@ -29,6 +33,7 @@
                 <div class="col-xs-6">Последний скан:</div>
                 <div class="col-xs-6">
                     <?php if ($data['last_parsed']) : ?>
+                        <?=$data['last_parsed']->OE?>
                     <?=$data['last_parsed']->desc?>
                     (<?=$data['last_parsed']->parsed_at?>)
                     <?php endif ?>
@@ -38,6 +43,7 @@
     </div>
 
     <div><a href="/results">Показать результаты</a></div>
+    <div><a href="/error-products">Показать товары с ошибками</a></div>
     <div><a href="/settings">Настрока импорта</a></div>
     <div><a href="/upload">Загрузить новый файл</a></div>
     <div><a href="/export">Результат в файле</a></div>
