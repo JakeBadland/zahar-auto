@@ -184,7 +184,7 @@ class ProductModel extends Model
     {
         return $this->db->table($this->table)
             ->select('*')
-            ->where( 'error IS NOT NULL')
+            ->where( "error <> ''")
             ->get()->getResult();
 
     }
@@ -193,7 +193,7 @@ class ProductModel extends Model
     {
         return $this->db->table($this->table)
             ->select('COUNT(*) as count')
-            ->where( 'error IS NOT NULL')
+            ->where( "error <> ''")
             ->get()->getRow()->count;
 
     }

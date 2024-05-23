@@ -47,3 +47,7 @@ td {
 .panel{
     margin: 10px 0;
 }
+
+.links div{
+    font-size: 16px;
+}

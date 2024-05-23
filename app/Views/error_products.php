@@ -7,7 +7,7 @@
         <div class="panel-body">
             <table>
                 <tr>
-                    <th class="col-xs-7">ID</th>
+                    <th class="col-xs-2">ID</th>
                     <th class="col-xs-7">Desc</th>
                     <th class="col-xs-2">OE</th>
                     <th class="col-xs-2">Link</th>

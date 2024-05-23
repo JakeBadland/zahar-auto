@@ -37,7 +37,7 @@ class LibAutopro {
         $product = $model->getProductForUpdate();
 
         //for testing
-        //$product = $model->getProductForUpdate(17258); //multi
+        //$product = $model->getProductForUpdate(13047); //multi
         //$product = $model->getProductForUpdate(13036); //single
         //$product = $model->getProductForUpdate(13569); //can`t get price
 
@@ -86,6 +86,19 @@ class LibAutopro {
         return $price;
     }
 
+    private function isUsed($td, $finder) : bool
+    {
+        $spans = $finder->query('.//span/span', $td);
+
+        if ($spans->length > 0){
+            $priceSpan = $spans->item(0);
+
+            return $priceSpan->hasAttribute('data-sub-title');
+        }
+
+        return false;
+    }
+
     private function parseMulti($product, $finder, $currency)
     {
         $rows = $finder->query('//table[@id="js-partslist-primary"]/tbody/tr');
@@ -98,7 +111,12 @@ class LibAutopro {
 
             $productOE = trim($cols[2]->nodeValue);
             if ($productOE == $product->OE){
-                $price = $this->clearPrice($cols[5]->nodeValue);
+                $price = 0;
+
+                //use only "Б/У"
+                if  ($this->isUsed($cols[5], $finder)){
+                    $price = $this->clearPrice($cols[5]->nodeValue);
+                }
 
                 if ($price){
                     $prices[] = $price;
@@ -113,34 +131,6 @@ class LibAutopro {
         $price = min($prices);
 
         return round($price / $currency, 2);
-    }
-
-    private function parseSingle($product, $node, $currency)
-    {
-        $model = new ProductModel();
-
-        $node = $node->item(0)->nodeValue;
-
-        $price = null;
-        if (strpos($node, 'грн') !== false){
-            $node = str_replace('грн', '', $node);
-            $node = trim($node);
-            $price = floatval($node);
-            $price = round($price / $currency, 2);
-        } else {
-            $model->productError($product, 'Can`t find price');
-        }
-
-        if (!$price){
-            $model->productError($product, 'Can`t get price');
-        }
-
-        return $price;
-    }
-
-    private function isUsed($td)
-    {
-
     }
 
     private function getAveragePrice($product, $htmlBody, $currency)
@@ -166,8 +156,12 @@ class LibAutopro {
 
             $productOE = trim($cols[2]->nodeValue);
             if ($productOE == $product->OE){
+                $price = 0;
 
-                $price = $this->clearPrice($cols[5]->nodeValue);
+                //use only "Б/У"
+                if  ($this->isUsed($cols[5], $finder)){
+                    $price = $this->clearPrice($cols[5]->nodeValue);
+                }
 
                 if ($price){
                     $prices[] = $price;
@@ -185,6 +179,29 @@ class LibAutopro {
         }
 
         return $average;
+    }
+
+    private function parseSingle($product, $node, $currency)
+    {
+        $model = new ProductModel();
+
+        $node = $node->item(0)->nodeValue;
+
+        $price = null;
+        if (strpos($node, 'грн') !== false){
+            $node = str_replace('грн', '', $node);
+            $node = trim($node);
+            $price = floatval($node);
+            $price = round($price / $currency, 2);
+        } else {
+            $model->productError($product, 'Can`t find price');
+        }
+
+        if (!$price){
+            $model->productError($product, 'Can`t get price');
+        }
+
+        return $price;
     }
 
     private function clearPrice($price)
