@@ -3,6 +3,7 @@
 namespace App\Libraries;
 
 use App\Models\ProductModel;
+use CodeIgniter\Model;
 
 class LibAutopro {
     private $result = null;
@@ -30,16 +31,29 @@ class LibAutopro {
         $currency = floatval(LibCurrencies::updateCurrencies());
 
         $model = new ProductModel();
+        $list = $model->getListOEFromFile();
 
         $this->checkHeaders();
         //$this->checkCookies();
 
-        $product = $model->getProductForUpdate();
-
-        //for testing
+        //$product = $model->getProductForUpdate(13837);
         //$product = $model->getProductForUpdate(13047); //multi
         //$product = $model->getProductForUpdate(13036); //single
         //$product = $model->getProductForUpdate(13569); //can`t get price
+        $product = $model->getProductForUpdate();
+
+        if ($product && !in_array($product->OE, $list)) {
+            $model->deleteProduct($product->OE);
+        }
+
+        //for testing
+        //$product = $model->getProductForUpdate(3498); //web can`t get price
+        /*
+        $product = $model->getProductForUpdate(13128); //can't get price
+        echo "<PRE>";
+        var_dump($product);
+        echo "</PRE>";
+        */
 
         $html = $this->getProductInfo($product);
 
@@ -48,6 +62,11 @@ class LibAutopro {
         }
 
         $price = $this->getPrice($product, $html->body, $currency);
+
+        echo "<PRE>";
+        var_dump($product);
+        var_dump('Price: ' . $price);
+        echo "</PRE>";
 
         $averagePrice = $this->getAveragePrice($product, $html->body, $currency);
 
@@ -74,25 +93,33 @@ class LibAutopro {
         }
 
         if (!$price){
-            return false;
+            return 0;
         }
 
         //if price less then a 10% price - (new price - 10%)
+        /*
         $percents = ($product->price / $price) * 100;
         if ($percents < 90){
             return 0;
         }
+        */
 
         return $price;
     }
 
+    //refine it! for check in tr! Not all td!
     private function isUsed($td, $finder) : bool
     {
         $spans = $finder->query('.//span/span', $td);
 
+        /*
+        echo "<PRE>";
+        var_dump($spans->item(0)->textContent);
+        echo "</PRE>";
+        */
+
         if ($spans->length > 0){
             $priceSpan = $spans->item(0);
-
             return $priceSpan->hasAttribute('data-sub-title');
         }
 
@@ -109,14 +136,26 @@ class LibAutopro {
         foreach ($rows as $tr){
             $cols = $tr->getElementsByTagName('td');
 
-            $productOE = trim($cols[2]->nodeValue);
-            if ($productOE == $product->OE){
+            $product->OE = strtoupper($product->OE);
+            $productOE = strtoupper(trim($cols[2]->nodeValue));
+
+            if ($productOE == trim($product->OE)){
                 $price = 0;
 
+                /*
+                echo "<PRE>";
+                var_dump($cols[6]->nodeValue);
+                echo "</PRE>";
+                */
+
+                $price = $this->clearPrice($cols[6]->nodeValue);
+
                 //use only "Б/У"
-                if  ($this->isUsed($cols[5], $finder)){
-                    $price = $this->clearPrice($cols[5]->nodeValue);
+                /*
+                if  ($this->isUsed($cols[4], $finder)){
+
                 }
+                */
 
                 if ($price){
                     $prices[] = $price;
@@ -129,8 +168,13 @@ class LibAutopro {
         }
 
         $price = min($prices);
+        $price = round($price / $currency, 2);
 
-        return round($price / $currency, 2);
+        echo "<PRE>";
+        var_dump('Minimal price: ' . $price);
+        echo "</PRE>";
+
+        return $price;
     }
 
     private function getAveragePrice($product, $htmlBody, $currency)
@@ -159,9 +203,13 @@ class LibAutopro {
                 $price = 0;
 
                 //use only "Б/У"
+                /*
                 if  ($this->isUsed($cols[5], $finder)){
                     $price = $this->clearPrice($cols[5]->nodeValue);
                 }
+                */
+
+                $price = $this->clearPrice($cols[6]->nodeValue);
 
                 if ($price){
                     $prices[] = $price;

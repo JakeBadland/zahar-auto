@@ -23,7 +23,7 @@ class Index extends BaseController
         ];
 
         if (is_file($this->filePath)){
-            $result = filectime($this->filePath);
+            $result = filemtime($this->filePath);
             $data['updated_data'] = date('d-m-Y H:i:s', $result);
         }
 
@@ -77,6 +77,8 @@ class Index extends BaseController
 
     public function upload()
     {
+        set_time_limit(0);
+
         $file = $this->request->getFile('datafile');
 
         if ($file && !$file->hasMoved()){
@@ -138,7 +140,7 @@ class Index extends BaseController
         return view('upload_d');
     }
 
-    /*
+
     public function clear()
     {
         $productModel = new ProductModel();
@@ -146,12 +148,20 @@ class Index extends BaseController
 
         return redirect()->to('/');
     }
-    */
+
 
     public function result() : string
     {
         $productModel = new ProductModel();
         $result = $productModel->getResults();
+
+        foreach ($result as $key => $item){
+            $result[$key]->recommended_price = 0;
+            if ($item->average){
+                $result[$key]->recommended_price = $item->average - ($item->average * 0.2);
+                $result[$key]->recommended_price = round($result[$key]->recommended_price, 2);
+            }
+        }
 
         return view('results', ['items' => $result]);
     }
@@ -275,7 +285,36 @@ class Index extends BaseController
 
     public function test()
     {
+        /*
+        $fileName = WRITEPATH . 'uploads/headers.txt';
 
+        $data = json_encode($_SERVER);
+
+        echo "<PRE>";
+        var_dump($data);
+        var_dump('Okey!)');
+        echo "</PRE>";
+
+        file_put_contents($fileName, $data);
+        */
+
+        /*
+        $link = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTzDZhMwu8ZWd0rnscHzMtz73qYv5myobbbH5kQsDWJTv84zXpVxLXLlTbFQPEjW6iQsDzy4pjNPjux/pub?gid=1464938412&single=true&output=csv';
+
+        $data = file_get_contents($link);
+
+        $fileName = WRITEPATH . 'uploads/test.csv';
+
+        file_put_contents($fileName, $data);
+
+        /*
+        $model = new ProductModel();
+        $list = $model->getListOEFromFile();
+
+        echo "<PRE>";
+        var_dump($list);
+        echo "</PRE>";
+        */
     }
 
 }

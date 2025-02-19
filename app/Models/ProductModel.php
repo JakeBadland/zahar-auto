@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Controllers\Cron;
+use App\Libraries\libCsv;
 use CodeIgniter\Model;
 
 class ProductModel extends Model
@@ -38,6 +38,11 @@ class ProductModel extends Model
 
         $fileOe = [];
         foreach ($data as $item){
+
+            if (!isset($item[$indexes['import_price']])){
+                continue;
+            }
+
             $product = [
                 'desc'  => $item[$indexes['import_desc']],
                 'OE'    => $item[$indexes['import_oe']],
@@ -70,6 +75,13 @@ class ProductModel extends Model
         }
     }
 
+    public function deleteProduct($productOE)
+    {
+        $this->db->table($this->table)
+            ->where('OE', $productOE)
+            ->delete();
+    }
+
     public function updateProduct($product)
     {
         $item = $this->db->table($this->table)
@@ -95,6 +107,7 @@ class ProductModel extends Model
 
         $query = $this->db->table($this->table)
             ->select('*')
+            ->where($where)
             ->orderBy('parsed_at', 'ASC')
             ->limit(1);
 
@@ -155,7 +168,7 @@ class ProductModel extends Model
         $data = [
             'parsed_at' => date('Y-m-d H:i:s', time()),
             'error' => $error,
-            'is_ignored' => 1
+            //'is_ignored' => 1
         ];
 
         $this->db->table($this->table)
@@ -168,7 +181,14 @@ class ProductModel extends Model
 
     public function clearAll()
     {
-        $this->db->table($this->table)->truncate();
+        $data = [
+            'newPrice' => NULL,
+        ];
+
+        $this->db->table($this->table)
+            ->update($data);
+
+        //$this->db->table($this->table)->truncate();
     }
 
     public function getResults()
@@ -249,6 +269,22 @@ class ProductModel extends Model
             ->select('*')
             ->where('OE', $text)
             ->get()->getRow();
+    }
+
+    public function getListOEFromFile()
+    {
+        $fileName = WRITEPATH . 'uploads/datafile.csv';
+
+        $items = libCsv::parseFile($fileName);
+        unset($items[0]); //header
+
+        $result = [];
+
+        foreach ($items as $item){
+            $result[] = $item[2];
+        }
+
+        return $result;
     }
 
 }

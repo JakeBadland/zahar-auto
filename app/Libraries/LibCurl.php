@@ -8,7 +8,7 @@ use \App\Models\CurlResponse;
 class LibCurl
 {
 
-    public function execute($url, $headers = null, $cookies = null, $method = 'GET', $body = null) : CurlResponse
+    public function execute($url, $headers = null, $cookies = null, $method = 'GET', $body = null) : ?CurlResponse
     {
         $curl = $this->getCurl($url, $method, $body);
 
@@ -21,6 +21,17 @@ class LibCurl
         }
 
         $response = curl_exec($curl);
+
+        if (!$response){
+
+            echo "<PRE>";
+            var_dump(curl_error($curl));
+            var_dump(curl_errno($curl));
+            echo "</PRE>";
+
+            return NULL;
+
+        }
 
         $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         $headerSize = curl_getinfo($curl, CURLINFO_HEADER_SIZE);
@@ -45,13 +56,16 @@ class LibCurl
         curl_setopt_array($curl, array(
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => "",
             CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 12,
             CURLOPT_TIMEOUT => 30,
             CURLOPT_CUSTOMREQUEST => $method,
             CURLOPT_HEADER  => true,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYHOST => false
         ));
 
         if ($body) {
@@ -69,6 +83,11 @@ class LibCurl
     private function setCookies($curl, $cookies)
     {
         foreach ($cookies as $line){
+
+            echo "<PRE>";
+            var_dump($line);
+            echo "</PRE>";
+
             curl_setopt($curl, CURLOPT_COOKIE , $line);
         }
     }

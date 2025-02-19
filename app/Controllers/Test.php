@@ -15,7 +15,9 @@ class Test extends BaseController
 
     public function index()
     {
-
+        echo "<PRE>";
+        var_dump($_SERVER);
+        echo "</PRE>";
 
     }
 

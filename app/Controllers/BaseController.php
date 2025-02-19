@@ -76,6 +76,10 @@ abstract class BaseController extends Controller
             return;
         }
 
+        if ($_SERVER['REQUEST_URI'] == '/cron/c24hour'){
+            return;
+        }
+
         if (($_SERVER['REQUEST_URI'] == '/login') || ($_SERVER['REQUEST_URI'] == '/logout')){
             return;
         }

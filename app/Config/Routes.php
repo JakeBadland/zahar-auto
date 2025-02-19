@@ -31,6 +31,8 @@ $routes->set404Override();
 // route since we don't have to scan directories.
 //$routes->get('/', 'Home::index');
 
+$routes->add('/test', 'Index::test');
+
 $routes->get('/', 'Index::index');
 $routes->get('/login', 'Index::login');
 $routes->post('/login', 'Index::login');
