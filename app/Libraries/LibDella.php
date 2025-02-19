@@ -12,6 +12,9 @@ class LibDella
     private $result = null;
     private $partUrl = null;
 
+    private $mailTo = 'badland@ukr.net';
+    private $subject = 'Новые заказы на Della.ua';
+
     private $defaultHeaders = [
         'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         //'Accept-Encoding: gzip, deflate, br, zstd',
@@ -22,12 +25,6 @@ class LibDella
         'Host: della.ua',
         'Referer: https://della.ua/',
 
-        /*
-        'Sec-Fetch-Dest: document',
-        'Sec-Fetch-Mode: navigate',
-        'Sec-Fetch-Site: same-origin',
-        'Sec-Fetch-User: ?1'
-        */
     ];
 
     private string $url = 'https://della.ua';
@@ -65,12 +62,12 @@ class LibDella
 
         $this->sendItems();
 
-        die;
+        echo "Della done at: " . date('Y-m-d H:i:s') . "<br/>";
     }
 
     private function getHtml()
     {
-        /*
+
         $curl = new LibCurl();
 
         $searchUrl = 'https://della.ua/search/a204bd158eflolh0ilk0m1.html';
@@ -81,6 +78,7 @@ class LibDella
             die('Can`t get search result!');
         }
 
+        /*
         echo "<PRE>";
         var_dump($result->code);
         var_dump($result->headers);
@@ -92,9 +90,11 @@ class LibDella
         file_put_contents($resultFile, $result->body);
         */
 
+        /*
         $result = new \stdClass();
         $resultFile = APPPATH . '../writable/result-della.txt';
         $result->body = file_get_contents($resultFile);
+        */
 
         return $result->body;
     }
@@ -105,48 +105,62 @@ class LibDella
 
         $dellaItems = $dellaModel->getNewItems();
 
-        $template = '<div class="container" style="width: 600px; border: 13px solid #787878; border-radius: 4px; background: rgba(173,173,240,0.48); margin: auto">';
+        if (!$dellaItems) return;
+
+        //$template = '<div class="container" style="width: 600px; border: 13px solid #787878; border-radius: 4px; background: rgba(173,173,240,0.48); margin: auto">';
+
+        $template = "";
+        $ids = [];
 
         foreach ($dellaItems as $item){
             $template .= $this->genHtml($item);
+            $ids[] = $item->inner_id;
         }
 
-        $template .= '</div>';
+        //$template .= '</div>';
 
-        $this->sendEmail($template);
+        $result = $this->sendEmail($template);
+
+        if ($result){
+            $dellaModel->markAsSent($ids);
+        }
+
+    }
+
+    private function updateItems()
+    {
+
     }
 
     private function sendEmail($html)
     {
-        $to = 'badland@ukr.net';
-
-        $subject = 'Новые заказы';
-
-        if (mail($to, $subject, $html)) {
-            //sent
+        if (mail($this->mailTo, $this->subject, $html)) {
+            echo "Mail sent <br/>";
+            return true;
         }
 
+        return false;
     }
 
-    private function genHtml($item)
+    private function genHtml($item) : string
     {
         $link = 'https://della.ua';
 
+        /*
         $html = '<div style="margin-top: 4px">';
         $html .= "<label style='margin-left: 10px'><a target='_blank' href='{$link}{$item->href}'>Link</a></label>";
         $html .= "<label style='margin-left: 10px'>[{$item->distance}]</label>";
         $html .= "<label style='margin-left: 10px'>{$item->direction}</label>";
         $html .= '</div><hr>';
+        */
+
+        $html = "Направление: {$item->direction} [{$item->distance}] \r\n";
+        $html .= "Ссылка: {$link}{$item->href}\r\n\r\n";
 
         return $html;
     }
 
-    private function sendItem($template)
-    {
-
-    }
-
-    private function parseItem($item, $finder)
+    private function parseItem($item, $finder): DellaItemModel
     {
         $dellaItem = new DellaItemModel();
         $dellaItem->inner_id = $item->getAttribute('request_id');

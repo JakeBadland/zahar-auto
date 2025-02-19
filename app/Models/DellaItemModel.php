@@ -53,4 +53,11 @@ class DellaItemModel extends Model
         return $result;
     }
 
+    public function markAsSent($ids)
+    {
+        $this->db->table($this->table)
+            ->whereIn('inner_id', $ids)
+            ->update(['is_sent' => 1]);
+    }
+
 }
