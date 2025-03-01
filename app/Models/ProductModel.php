@@ -176,7 +176,7 @@ class ProductModel extends Model
             ->update($data);
 
         //Cron::log($error);
-        die($error);
+        //die($error);
     }
 
     public function clearAll()

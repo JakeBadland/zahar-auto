@@ -13,6 +13,7 @@ class DellaItemModel extends Model
     public $distance = '';
     public $direction = '';
     public $href = '';
+    public $cargo = '';
 
     protected string $table = 'della_items';
 
@@ -25,6 +26,7 @@ class DellaItemModel extends Model
                 'distance' => $this->distance,
                 'direction' => $this->direction,
                 'href' => $this->href,
+                'cargo' => $this->cargo,
                 'is_sent' => 0
             ];
 

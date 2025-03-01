@@ -39,7 +39,8 @@ class Cron extends BaseController
 
     public function c2min()
     {
-
+        $della = new LibDella();
+        $della->run();
     }
 
     public function c1min()
@@ -56,17 +57,12 @@ class Cron extends BaseController
 
         self::log('Started at : ' . date('Y-m-d H:i:s') . ' ');
 
-        /*
         $auto = new LibAutopro();
         $auto->run();
-        */
-
-        $della = new LibDella();
-        $della->run();
 
         self::log('Finished at : ' . date('Y-m-d H:i:s') . "\r\n");
 
-        die('DONE');
+        die('ALL DONE');
     }
 
     public static function clearRoot()
