@@ -2,10 +2,7 @@
 
 namespace App\Libraries;
 
-use App\Controllers\Index;
 use App\Models\DellaItemModel;
-use App\Models\ProductModel;
-use CodeIgniter\Model;
 
 class LibDella
 {
@@ -16,7 +13,6 @@ class LibDella
     private $subject = 'Новые заказы на Della.ua';
 
     private $defaultHeaders = [
-        'Content-type: text/html; charset=UTF-8',
         'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         //'Accept-Encoding: gzip, deflate, br, zstd',
         'Accept-Encoding: gzip, deflate',
@@ -26,6 +22,8 @@ class LibDella
         'Host: della.ua',
         'Referer: https://della.ua/',
     ];
+
+    private $mailHeaders = "MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8";
 
     private string $url = 'https://della.ua';
 
@@ -91,7 +89,7 @@ class LibDella
 
         if (!$dellaItems) return;
 
-        $template = '<div class="container" style="width: 600px; border: 13px solid #787878; border-radius: 4px; background: rgba(173,173,240,0.48); margin: auto">';
+        //$template = '<div class="container" style="width: 600px; border: 13px solid #787878; border-radius: 4px; background: rgba(173,173,240,0.48); margin: auto">';
 
         $template = "";
         $ids = [];
@@ -101,9 +99,10 @@ class LibDella
             $ids[] = $item->inner_id;
         }
 
-        $template .= '</div>';
+        //$template .= '</div>';
 
         $result = $this->sendEmail($template);
+        LibTelegram::sendMessage($template);
 
         if ($result){
             $dellaModel->markAsSent($ids);
@@ -113,7 +112,7 @@ class LibDella
 
     private function sendEmail($html)
     {
-        if (mail($this->mailTo, $this->subject, $html)) {
+        if (mail($this->mailTo, $this->subject, $html, $this->mailHeaders)) {
             return true;
         }
 
@@ -124,17 +123,18 @@ class LibDella
     {
         $link = 'https://della.ua';
 
+        /*
         $html = '<div style="margin-top: 4px">';
         $html .= "<div style='margin-left: 10px'><a target='_blank' href='{$link}{$item->href}'>Ссылка</a></div>";
         $html .= "<div style='margin-left: 10px'>Направление: {$item->direction} [{$item->distance}]</div>";
         $html .= "<div style='margin-left: 10px'>Тип груза: {$item->cargo}</div>";
         $html .= '</div><hr>';
+        */
 
-        /*
         $html = "Направление: {$item->direction} [{$item->distance}] \r\n";
         $html .= "Ссылка: {$link}{$item->href}\r\n";
         $html .= "Тип груза: {$item->cargo}\r\n\r\n";
-        */
+
 
         return $html;
     }
@@ -160,22 +160,6 @@ class LibDella
         $dellaItem->cargo = $cargo->item(0)->nodeValue;
 
         return $dellaItem;
-    }
-
-    private function getSearchUrl() : string
-    {
-        $cf = 204;
-        $ct = 158;
-        $rf = 0;
-        $rt = 0;
-
-        $location_start = $this->url . "/search/";
-        $location = "a" . ($cf ?: "") . "b" . ($rf ?: "") . "d" . ($ct ?: "") . "e" . ($rt ?: "");
-        $location .= "flolh0ilk0m1.html";
-
-        $location = $location_start . $location;
-
-        return $location;
     }
 
     private function getSettings()

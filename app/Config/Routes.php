@@ -31,7 +31,7 @@ $routes->set404Override();
 // route since we don't have to scan directories.
 //$routes->get('/', 'Home::index');
 
-$routes->add('/test', 'Index::test');
+$routes->get('/test', 'Test::index');
 
 $routes->get('/', 'Index::index');
 $routes->get('/login', 'Index::login');
@@ -53,7 +53,6 @@ $routes->post('/doubles', 'Index::doubles');
 $routes->get('/error-products', 'Index::errorProducts');
 $routes->get('/list/(:num)', 'Index::listProducts/$1');
 $routes->post('/search-products', 'Index::searchProducts');
-
 
 $routes->get('/edit-product/(:num)', 'Index::editProduct/$1');
 $routes->post('/edit-product', 'Index::editProduct');
