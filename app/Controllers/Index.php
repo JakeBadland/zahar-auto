@@ -283,6 +283,31 @@ class Index extends BaseController
         die();
     }
 
+    //della.ua
+    public function cargoFilter()
+    {
+        $fileName = WRITEPATH . 'delta-filters.txt';
+
+        $data = $this->request->getPost();
+
+        if ($data){
+            $filters = trim($data['filters']);
+            $filters = explode("\r\n", $filters);
+
+            foreach ($filters as $key => $line){
+                $filters[$key] = trim($line);
+            }
+
+            $filters = implode("\r\n", $filters);
+
+            file_put_contents($fileName, $filters);
+        }
+
+        $filters = file_get_contents($fileName);
+
+        return view('cargo-filter', ['filters' => $filters]);
+    }
+
     public function test()
     {
         /*

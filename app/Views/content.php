@@ -42,17 +42,37 @@
         </div>
     </div>
 
-    <div class="links">
-        <div><a href="/results">Показать результаты</a></div>
-        <div><a href="/error-products">Показать товары с ошибками</a></div>
-        <div><a href="/settings">Настрока импорта</a></div>
-        <div><a href="/upload">Загрузить новый файл</a></div>
-        <div><a href="/export">Результат в файле</a></div>
-        <div><a href="/doubles">Анализ на дубликаты</a></div>
-        <div><a href="/list/1">Редактировать товары</a></div>
-        <!--    <div><a href="/clear">Удалить все товары</a></div>-->
-        <!--    <div><a href="/uploads/datafile.csv">Сохранить загруженный файл</a></div>-->
+    <style>
+        .column{
+            float: left;
+            width: 50%;
+        }
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+    </style>
+
+    <div class="row">
+        <div class="column">
+            <h3>Auto.pro</h3>
+            <div><a href="/results">Показать результаты</a></div>
+            <div><a href="/error-products">Показать товары с ошибками</a></div>
+            <div><a href="/settings">Настрока импорта</a></div>
+            <div><a href="/upload">Загрузить новый файл</a></div>
+            <div><a href="/export">Результат в файле</a></div>
+            <div><a href="/doubles">Анализ на дубликаты</a></div>
+            <div><a href="/list/1">Редактировать товары</a></div>
+            <!--    <div><a href="/clear">Удалить все товары</a></div>-->
+            <!--    <div><a href="/uploads/datafile.csv">Сохранить загруженный файл</a></div>-->
+        </div>
+        <div class="column">
+            <h3>Della.ua</h3>
+            <div><a href="/cargo-list">Фильтры груза</a></div>
+        </div>
     </div>
+
 
 </div>
 

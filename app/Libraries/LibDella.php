@@ -58,9 +58,7 @@ class LibDella
             $dellaItem->saveItem();
         }
 
-        if (!strpos($_SERVER['HTTP_HOST'], '.pro')){
-            $this->sendItems();
-        }
+        $this->sendItems();
 
         echo "Della done at: " . date('Y-m-d H:i:s') . "<br/>";
     }
@@ -73,6 +71,10 @@ class LibDella
         $searchUrl = 'https://della.ua/search/a204bd158eflolh0ilk0m1.html';
 
         $result = $curl->execute($searchUrl, $this->defaultHeaders, NULL, 'GET', NULL);
+
+        echo "<PRE>";
+        var_dump($result->code);
+        echo "</PRE>";
 
         if (!$result){
             die('Can`t get search result!');
@@ -101,13 +103,13 @@ class LibDella
 
         //$template .= '</div>';
 
-        $result = $this->sendEmail($template);
-        LibTelegram::sendMessage($template);
-
-        if ($result){
-            $dellaModel->markAsSent($ids);
+        if ($_SERVER['HTTP_HOST'] != 'zahar-auto.pro') {
+            $this->sendEmail($template);
         }
 
+        LibTelegram::sendMessage($template);
+
+        $dellaModel->markAsSent($ids);
     }
 
     private function sendEmail($html)
@@ -133,7 +135,7 @@ class LibDella
 
         $html = "Направление: {$item->direction} [{$item->distance}] \r\n";
         $html .= "Ссылка: {$link}{$item->href}\r\n";
-        $html .= "Тип груза: {$item->cargo}\r\n\r\n";
+        $html .= "Тип груза: {$item->cargo}\r\n\r\n<hr>";
 
 
         return $html;

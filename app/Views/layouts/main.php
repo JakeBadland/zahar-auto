@@ -27,6 +27,7 @@
     <?= $this->renderSection('content') ?>
     <?= $this->renderSection('login') ?>
     <?= $this->renderSection('error') ?>
+    <?= $this->renderSection('cargo-filter') ?>
 </div>
 <div class="footer"></div>
 

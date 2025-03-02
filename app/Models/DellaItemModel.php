@@ -19,6 +19,8 @@ class DellaItemModel extends Model
 
     public function saveItem()
     {
+        $filters = $this->getCargoFilers();
+
         if (!$this->isExist()){
 
             $item = [
@@ -30,9 +32,21 @@ class DellaItemModel extends Model
                 'is_sent' => 0
             ];
 
+            if (in_array($this->cargo, $filters)){
+                $item['is_sent'] = 1;
+            }
+
             $this->db->table($this->table)->insert($item);
         }
 
+    }
+
+    private function getCargoFilers()
+    {
+        $fileName = WRITEPATH . 'delta-filters.txt';
+
+        $filters = file_get_contents($fileName);
+        return explode("\r\n", $filters);
     }
 
     public function isExist()

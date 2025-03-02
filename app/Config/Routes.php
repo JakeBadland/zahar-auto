@@ -31,25 +31,24 @@ $routes->set404Override();
 // route since we don't have to scan directories.
 //$routes->get('/', 'Home::index');
 
+//auto.pro
 $routes->get('/test', 'Test::index');
 
 $routes->get('/', 'Index::index');
-$routes->get('/login', 'Index::login');
-$routes->post('/login', 'Index::login');
+$routes->add('/login', 'Index::login');
 $routes->get('/logout', 'Index::logout');
 
 $routes->get('/export', 'Index::export');
 
-$routes->get('/settings', 'Index::settings');
-$routes->post('/settings', 'Index::settings');
+$routes->add('/settings', 'Index::settings');
+//$routes->post('/settings', 'Index::settings');
 
-$routes->get('/upload', 'Index::upload');
-$routes->post('/upload', 'Index::upload');
+$routes->add('/upload', 'Index::upload');
+//$routes->post('/upload', 'Index::upload');
 
-$routes->get('/doubles', 'Index::doubles');
-$routes->post('/doubles', 'Index::doubles');
+$routes->add('/doubles', 'Index::doubles');
+//$routes->post('/doubles', 'Index::doubles');
 
-//$routes->get('/list', 'Index::listProducts/1');
 $routes->get('/error-products', 'Index::errorProducts');
 $routes->get('/list/(:num)', 'Index::listProducts/$1');
 $routes->post('/search-products', 'Index::searchProducts');
@@ -59,6 +58,9 @@ $routes->post('/edit-product', 'Index::editProduct');
 
 $routes->get('/clear', 'Index::clear');
 $routes->get('/results', 'Index::result');
+
+//della.ua
+$routes->add('/cargo-list', 'Index::cargoFilter');
 
 //CRON group
 $routes->get('/cron/c1min', 'Cron::c1min');
