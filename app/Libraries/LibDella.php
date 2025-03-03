@@ -135,8 +135,7 @@ class LibDella
 
         $html = "Направление: {$item->direction} [{$item->distance}] \r\n";
         $html .= "Ссылка: {$link}{$item->href}\r\n";
-        $html .= "Тип груза: {$item->cargo}\r\n\r\n<hr>";
-
+        $html .= "Тип груза: {$item->cargo}\r\n\r\n";
 
         return $html;
     }

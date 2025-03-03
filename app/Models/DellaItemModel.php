@@ -7,45 +7,64 @@ use CodeIgniter\Model;
 
 class DellaItemModel extends Model
 {
+    protected string $table = 'della_items';
+
+    private string $allowAll = 'all';
 
     public int $id = 0;
-    public $inner_id = '';
-    public $distance = '';
-    public $direction = '';
-    public $href = '';
-    public $cargo = '';
-
-    protected string $table = 'della_items';
+    public string $inner_id = '';
+    public string $distance = '';
+    public string $direction = '';
+    public string $href = '';
+    public string $cargo = '';
+    public string $is_sent = '0';
 
     public function saveItem()
     {
-        $filters = $this->getCargoFilers();
-
-        if (!$this->isExist()){
-
-            $item = [
-                'inner_id' => $this->inner_id,
-                'distance' => $this->distance,
-                'direction' => $this->direction,
-                'href' => $this->href,
-                'cargo' => $this->cargo,
-                'is_sent' => 0
-            ];
-
-            if (in_array($this->cargo, $filters)){
-                $item['is_sent'] = 1;
-            }
-
-            $this->db->table($this->table)->insert($item);
+        if ($this->isExist()){
+            return;
         }
 
+        $item = [
+            'inner_id' => $this->inner_id,
+            'distance' => $this->distance,
+            'direction' => $this->direction,
+            'href' => $this->href,
+            'cargo' => $this->cargo,
+            'is_sent' => 0
+        ];
+
+        //ignore if not in filters
+        if (!$this->isInList($this->cargo)){
+            $item['is_sent'] = 1;
+        }
+
+        $this->db->table($this->table)->insert($item);
     }
 
-    private function getCargoFilers()
+    private function isInList($cargo) : bool
+    {
+        $filters = $this->getCargoFilters();
+
+        foreach ($filters as $cargoType){
+            if ($cargoType == $this->allowAll){
+                return true;
+            }
+
+            if ($cargoType == $cargo){
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function getCargoFilters()
     {
         $fileName = WRITEPATH . 'delta-filters.txt';
 
         $filters = file_get_contents($fileName);
+
         return explode("\r\n", $filters);
     }
 
@@ -53,7 +72,7 @@ class DellaItemModel extends Model
     {
         $result = $this->db->table($this->table)
             ->select('*')
-            ->where('inner_id', (int)$this->inner_id)
+            ->where('inner_id', (string) $this->inner_id)
             ->get()->getResult();
 
         return (bool)$result;
