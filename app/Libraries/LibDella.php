@@ -4,7 +4,7 @@ namespace App\Libraries;
 
 use App\Models\DellaItemModel;
 
-class LibDella
+class LibDella extends libMain
 {
     private $result = null;
     private $partUrl = null;
@@ -103,11 +103,11 @@ class LibDella
 
         //$template .= '</div>';
 
-        if ($_SERVER['HTTP_HOST'] != 'zahar-auto.pro') {
+        if (!$this->isLocal()){
             $this->sendEmail($template);
-        }
 
-        LibTelegram::sendMessage($template);
+            LibTelegram::sendMessage($template);
+        }
 
         $dellaModel->markAsSent($ids);
     }

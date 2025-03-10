@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Libraries\LibTelegram;
+use App\Libraries\LibEnv;
 
 
 class Test extends BaseController
@@ -13,12 +14,11 @@ class Test extends BaseController
 
     private $mailHeaders = "MIME-Version: 1.0\r\nContent-type: text/html; charset=UTF-8";
 
-    private $token = '7565495903:AAHBIxyV9v_CZrwkEehjobqa_9w9-MIRGhE';
-
     public function index()
     {
-        LibTelegram::sendMessage('test');
-        //$this->sendMessage(-4621623125, $this->token,"Hellokitty");
+        //LibTelegram::sendMessage('Token test');
+
+        die('test/index');
 
         /*
         $html = '<div>';
@@ -33,23 +33,5 @@ class Test extends BaseController
         */
     }
 
-    // Функция отправки сообщения в чат
-    function sendMessage($chatId, $token, $text) {
-
-        $url = "https://api.telegram.org/bot{$token}/sendMessage";
-        $data = [
-            'chat_id' => $chatId,
-            'text' => $text,
-        ];
-        $options = [
-            'http' => [
-                'method' => 'POST',
-                'content' => http_build_query($data),
-                'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
-            ],
-        ];
-        $context = stream_context_create($options);
-        file_get_contents($url, false, $context);
-    }
 
 }

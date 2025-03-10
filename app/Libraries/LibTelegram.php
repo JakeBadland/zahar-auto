@@ -2,10 +2,13 @@
 
 namespace App\Libraries;
 
+use App\Libraries\LibEnv;
+
 class LibTelegram {
 
     public static function sendMessage($text) {
-        $token = '7565495903:AAHBIxyV9v_CZrwkEehjobqa_9w9-MIRGhE';
+        $token = LibEnv::getenv('TELEGRAM_TOKEN');
+
         $groupId = -4621623125;
 
         $url = "https://api.telegram.org/bot{$token}/sendMessage";
